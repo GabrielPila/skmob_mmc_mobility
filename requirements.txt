@@ -1,0 +1,7 @@
+scikit-mobility==0.8.1
+pandas==1.2.5
+geopandas==0.9.0
+seaborn==0.11.1
+numpy==1.21.1
+matplotlib==3.4.2
+tqdm==4.61.1
