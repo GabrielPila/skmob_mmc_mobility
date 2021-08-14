@@ -19,6 +19,7 @@ The process is as follows:
 
 4. Generation of the transition matrix, which shows the transition of the user among different clusters.
 
+5. Generation of the Stationary Vector
 
 # Contributors:
 - Gabriel Pila (gabriel.pilah@pucp.edu.pe)
