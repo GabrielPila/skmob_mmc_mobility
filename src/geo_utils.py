@@ -162,6 +162,7 @@ def get_stationary_vector(transitMatrix):
         stationary_vector (np.array): Stationary Vector
     '''
     n = transitMatrix.shape[0]
+    print('Shape of transitMatrix: ', transitMatrix.shape)
     A = np.append(transitMatrix.T - np.identity(n), np.ones(n).reshape((1,n)), axis=0)
     B = np.zeros(n+1).reshape((n+1,1))
     B[n][0]=1
