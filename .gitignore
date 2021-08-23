@@ -6,6 +6,7 @@
 *.csv.zip
 *.zip
 *.txt
+!geo_000_009.csv.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
