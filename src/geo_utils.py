@@ -43,11 +43,14 @@ def get_clusters_from_tdf(tdf,
     --------
         clusters (Data Frame): The Dataframe of the clusters with lat and lng.
     '''
+    filter_noise = False
     if filter_noise:
         # 1. Noise Filtering
         tdf_f = filtering.filter(tdf, 
                                  max_speed_kmh=max_speed_kmh)
         if verbose: print('INFO: Noise Filtering applied')
+    else:
+        tdf_f = tdf
     
     if detect_stops:
     # 2. Detection Stops
@@ -168,3 +171,188 @@ def get_stationary_vector(transitMatrix):
     B[n][0]=1
     stationary_vector = np.linalg.solve((A.T).dot(A), (A.T).dot(B)) 
     return stationary_vector
+
+
+
+# Distance Estimation
+
+def get_distance_bw_clusters(cluster_1, cluster_2):
+    '''Get Distance Between Clusters
+    
+    Parameters
+    ----------
+        cluster_1 (pd.Dataframe): df with columns ['cluster', 'lat', 'lng', 'sta_vector']
+        cluster_2 (pd.Dataframe): df with columns ['cluster', 'lat', 'lng', 'sta_vector']
+    
+    Returns
+    -------
+        distance (float): Distance between clusters (one-way)
+    '''
+    valid_distances = []
+    valid_clusters = []
+    for i, row_i in cluster_1.iterrows():    
+        coord_i = (row_i['lat'], row_i['lng'])
+
+        clusters, distances = [], []    
+        for j, row_j in cluster_2.iterrows():
+            cluster_j = row_j['cluster']
+            coord_j = (row_j['lat'], row_j['lng'])
+
+            distance_ij = skmob.utils.utils.distance(coord_i, coord_j)    
+            clusters.append(cluster_j)
+            distances.append(distance_ij)
+
+        distances = np.array(distances)
+
+        idx_min = distances.argmin()
+        min_dist = distances.min()
+        cluster_min = clusters[idx_min]
+
+        valid_distances.append(min_dist)
+        valid_clusters.append(cluster_min)
+
+    cluster_est = cluster_1.copy()
+    cluster_est['cluster_other'] = valid_clusters
+    cluster_est['distance_other'] = valid_distances
+    distance = (cluster_est['distance_other'] * cluster_est['sta_vector']).sum()
+    return distance
+
+
+def get_mean_distance_bw_clusters(cluster_1, cluster_2):
+    '''Get Mean Distance Between Clusters
+    
+    Get the distances of cluster_1 to cluster_2 and viceversa and returns the average.
+
+    Parameters
+    ----------
+        cluster_1 (pd.Dataframe): df with columns ['cluster', 'lat', 'lng', 'sta_vector']
+        cluster_2 (pd.Dataframe): df with columns ['cluster', 'lat', 'lng', 'sta_vector']
+    
+    Returns
+    -------
+        mean_distance (float): Distance between clusters (two-way)
+    '''
+    d1 = get_distance_bw_clusters(cluster_1, cluster_2)
+    d2 = get_distance_bw_clusters(cluster_2, cluster_1)
+    mean_distance = (d1+d2)/2
+    return mean_distance
+
+
+def get_mmc_distances_matrix(mmc_list_a, mmc_list_b):
+    '''Get MMC Distances Matrix
+    
+    It estimates the distances of the elements of two lists of MMCs.
+    Afterwards, it stores the distances in a matrix.
+    
+    Parameters
+    ----------
+        mmc_list_a (list): List of MMCs A
+        mmc_list_b (list): List of MMCs B
+
+    Returns
+    -------
+        distance_matrix (np.array): Matrix with all the distances calculated.
+    
+    '''
+    n = len(mmc_list_a)
+    m = len(mmc_list_b)
+    distance_matrix = np.zeros((n, m))
+    for i, mmc_i in enumerate(mmc_list_a):
+        for j, mmc_j in enumerate(mmc_list_b):
+            distance = get_mean_distance_bw_clusters(mmc_i, mmc_j)
+            distance_matrix[i,j] = round(distance,4)
+            
+    return distance_matrix
+
+
+############ ALL COMBINED ##############
+
+def get_mmc_clusters_stavectors(geo):
+    '''Get MMC Clusters and Stationary Vectors
+    
+    Parameters
+    ----------
+        geo (pd.Dataframe): Dataframe of 1 user_id. Must contain only the columns: ['user', 'hour', 'lat', 'lng']
+    
+    Returns
+    -------
+        clusters (pd.Dataframe): Dataframe with the clusters and the stationary value
+        m (folium.folium.Map): Map generated with the clusters on it.
+    '''
+    # TDF Definition
+    trgeo = skmob.TrajDataFrame(
+        geo, 
+        datetime='hour',
+        user_id='user'
+    )
+
+    # Cluster Generation
+    clusters, m = get_clusters_from_tdf(
+        trgeo,
+        verbose=True,
+        max_speed_kmh= 0.1,
+        detect_stops=False,
+        compress=False ,
+        minutes_for_a_stop=2,
+        spatial_radius_km=0.2,
+        spatial_radius_compress_km=.2,
+        cluster_radius_km=0.5,
+        min_samples=2
+    )
+
+    # Cluster Assignation
+    trgeo_cl, distances = assign_tdf_points_to_clusters(
+        tdf=trgeo, 
+        clusters=clusters
+    )
+
+    # Generation of Transit Dataframe
+    transit_df = get_mmc_transitions(trgeo_cl)
+
+    # Generation of Transit Matrix
+    transit_matrix = pd.crosstab(transit_df['cluster'], 
+                                 transit_df['cluster_next'],
+                                 normalize='index').values
+    display(transit_matrix)
+    
+################################## START FIX ANTHONY ################################
+
+    #Lógica adicional para remover clusters sin salida o entrada
+    ##Retiramos las filas que tienen solo ceros y una columna con 1
+#    if ((transit_matrix.shape[0]>2 )& (transit_matrix.shape[1]>2)):
+#        print('Revisando filas de la Matriz de transición...')
+#        print('mostrando clusters iniciales')
+#        display(clusters)
+#        rows_to_drop = (transit_matrix==0).sum(axis=1)==(transit_matrix.shape[1]-1)#todos los valores en 0 excepto 1
+#        rows_to_drop = [idx for idx,row in enumerate(rows_to_drop) if row]
+#        if len(rows_to_drop)>0: 
+#            transit_matrix = np.delete(transit_matrix,rows_to_drop,0)
+#            clusters=clusters.drop(rows_to_drop, axis=0  )
+#            print('clusters {} eliminados'.format(rows_to_drop))
+#            print('Transit matrix actual:')
+#            display(transit_matrix)
+            
+        ##Retiramos las columnas que tienen solo ceros una fila con 1
+#        print('Revisando columnas de la Matriz de transición...')
+#        print('mostrando clusters iniciales')
+#        display(clusters)
+#        cols_to_drop = (transit_matrix==0).sum(axis=0)==(transit_matrix.shape[0]-1)
+#        cols_to_drop = [idx for idx,col in enumerate(cols_to_drop) if col]
+#        if len(cols_to_drop)>0: 
+#            transit_matrix = np.delete(transit_matrix,cols_to_drop,1)
+#            clusters=clusters.drop(cols_to_drop, axis=0  )
+#            print('clusters {} eliminados'.format(cols_to_drop))
+#            print('Transit matrix actual:')
+#            display(transit_matrix)
+#    display(transit_matrix)
+
+################################## END FIX ANTHONY ################################
+
+
+    # Stationary Vector Assignation
+    try:
+        clusters['sta_vector'] = get_stationary_vector(transit_matrix)
+    except:
+        pass
+    
+    return clusters, m, transit_matrix, transit_df

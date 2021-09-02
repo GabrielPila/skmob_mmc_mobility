@@ -11,6 +11,12 @@ import os
 
 warnings.filterwarnings('ignore')
 
+id_trajs = os.listdir('../data/Geolife Trajectories 1.3/Data')
+id_trajs = sorted([x for x in id_trajs if '.' not in x])
+
+re_start = 0
+uid_start = id_trajs[0]
+
 # Data Extraction - GEOLIFE
 data = pd.DataFrame()
 l = 0
