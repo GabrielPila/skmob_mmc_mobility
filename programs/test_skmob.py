@@ -12,6 +12,8 @@ from skmob.preprocessing import (filtering,
 geo = pd.read_csv('../data/geo82.csv.zip')
 geo.columns = ['user', 'hour', 'lat', 'lng']
 
+geo['user'] = geo['user'].map(int)
+ 
 print(geo.shape)
 print(geo.head())
 
@@ -24,7 +26,7 @@ print(tdf.head())
 
 
 tdf_f = filtering.filter(tdf,
-                        max_speed_kmh=0.01)
+                        max_speed_kmh=1)
 
 print(tdf_f.shape)
 print(tdf_f.head())
