@@ -43,7 +43,7 @@ def get_clusters_from_tdf(tdf,
     --------
         clusters (Data Frame): The Dataframe of the clusters with lat and lng.
     '''
-    filter_noise = False
+    #filter_noise = False
     if filter_noise:
         # 1. Noise Filtering
         tdf_f = filtering.filter(tdf, 
