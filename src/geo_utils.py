@@ -356,3 +356,149 @@ def get_mmc_clusters_stavectors(geo):
         pass
     
     return clusters, m, transit_matrix, transit_df
+
+
+
+def analyze_time_drift(data):
+    '''Analiza la distribución de la variación de tiempo (segundos) entre evento y evento'''
+    
+    # Distribución de número de eventos
+    serie_seconds_events = data['seconds_diff'].value_counts()
+    serie_seconds_events_log = np.log10(serie_seconds_events)
+
+    print(serie_seconds_events)
+    print()
+    print(serie_seconds_events.quantile([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1]))
+
+    fig = plt.figure(figsize=(15,4))
+    fig.add_subplot(1,2,1)
+    data['seconds_diff'].hist(bins=100)
+    plt.ylabel('Numero de Eventos')
+    plt.xlabel('Delta de Segundos')
+    
+    fig.add_subplot(1,2,2)
+
+    serie_seconds_events_log.hist(bins=30)
+    plt.title('Distribución de eventos según drift en segundos (log10)');
+    plt.ylabel('Numero de Eventos')
+    plt.xlabel('Delta de Segundos (log10 scale)');
+    
+
+def analyze_space_drift(data):
+    '''Analiza la distribución de la variación de distancia (Km) entre evento y evento'''
+
+    serie_distance_events = data['distance_to_last_km'].value_counts()
+    serie_distance_events_log = np.log10(serie_distance_events)
+    
+    print(serie_distance_events)
+    print()
+    print(serie_distance_events.quantile([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1]))
+
+    fig = plt.figure(figsize=(15,4))
+    fig.add_subplot(1,2,1)
+    data['distance_to_last_km'].hist(bins=100)
+    plt.ylabel('Numero de Eventos')
+    plt.xlabel('Delta de KM');
+    
+    fig.add_subplot(1,2,2)
+
+    serie_distance_events_log.hist(bins=30)
+    plt.title('Distribución de eventos según drift de distancia (log10)');
+    plt.ylabel('Numero de Eventos')
+    plt.xlabel('Delta de KM (log10 scale)');
+    
+    
+def analyze_speed_drift(data):
+    '''Analiza la velocidad (metros por segundo) de cada evento'''
+
+    serie_speed = data['speed_mps']
+    serie_speed_log = np.log10(serie_speed+1)
+    
+    print(serie_speed.quantile([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1]))
+
+    fig = plt.figure(figsize=(15,4))
+    
+    fig.add_subplot(1,2,1)
+    serie_speed.hist(bins=100)
+    plt.title('Distribución de eventos según velocidad');
+    plt.ylabel('Numero de Eventos')
+    plt.xlabel('Velocidad');
+    
+    fig.add_subplot(1,2,2)
+    serie_speed_log.hist(bins=30)
+    plt.title('Distribución de eventos según velocidad (log10)');
+    plt.ylabel('Numero de Eventos')
+    plt.xlabel('Velocidad (log10 scale)');
+    
+    
+def analyze_number_of_events_per_day(data):
+    '''Analiza la distribución de la variación de tiempo (segundos) entre evento y evento'''
+
+    # Distribución de número de eventos
+    df_events_per_day = data.groupby(['date','user'], as_index=False).size()
+    
+    serie_user_events_per_day = df_events_per_day['size']
+    serie_user_events_per_day_log = np.log10(serie_user_events_per_day)
+
+    print(serie_user_events_per_day)
+    print()
+    print(df_events_per_day['size'].quantile([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1]))
+
+    fig = plt.figure(figsize=(15,4))
+
+    fig.add_subplot(1,2,1)
+    serie_user_events_per_day.hist(bins=30)
+    plt.title('Distribución de número de eventos por usuarios por día');
+    plt.ylabel('Numero de Usuarios')
+    plt.xlabel('Número de eventos en un día')    
+    
+    fig.add_subplot(1,2,2)
+    serie_user_events_per_day_log.hist(bins=30)
+    plt.title('Distribución de número de eventos por usuarios por día (log10)');
+    plt.ylabel('Numero de Usuarios')
+    plt.xlabel('Número de eventos en un día (log10 scale)')
+    
+def analyze_number_of_events(data):
+    # Distribución de número de eventos
+    serie_user_events = data['user'].value_counts()
+    serie_user_events_log = np.log10(serie_user_events)
+
+    print(serie_user_events)
+    print()
+    print(serie_user_events.quantile([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1]))
+
+    fig = plt.figure(figsize=(15,4))
+
+    fig.add_subplot(1,2,1)
+    serie_user_events.hist(bins=30)
+    plt.title('Distribución de usuarios según Nro de Eventos');
+    plt.ylabel('Numero de Usuarios')
+    plt.xlabel('Número de eventos')    
+    
+    fig.add_subplot(1,2,2)
+    serie_user_events_log.hist(bins=30)
+    plt.title('Distribución de usuarios según Nro de Eventos (log10)');
+    plt.ylabel('Numero de Usuarios')
+    plt.xlabel('Número de eventos (log10 scale)')
+    
+
+def analyze_dates_with_events(data):
+    # Distribución de número de eventos
+    serie_user_events = data[['user','date']].drop_duplicates()['user'].value_counts()
+    serie_user_events_log = np.log10(serie_user_events)
+
+    print(serie_user_events)
+
+    fig = plt.figure(figsize=(15,4))
+    fig.add_subplot(1,2,1)
+    serie_user_events.hist(bins=30)
+    plt.title('Distribución de usuarios según Nro de Días con Eventos');
+    plt.ylabel('Numero de Usuarios')
+    plt.xlabel('Número de Días con eventos')
+    
+    fig.add_subplot(1,2,2)
+
+    serie_user_events_log.hist(bins=30)
+    plt.title('Distribución de usuarios según Nro de Días con Eventos (log10)');
+    plt.ylabel('Numero de Usuarios')
+    plt.xlabel('Número de eventos (log10 scale)')
