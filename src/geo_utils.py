@@ -146,6 +146,7 @@ def get_mmc_transitions(tdf):
     mmc_df['cluster_next'] = mmc_df['cluster'].shift(-1)
 
     mmc_df = mmc_df.dropna(subset=['cluster_next'])
+    #mmc_df.loc[mmc_df['cluster_next'].isnull(), 'cluster_next'] = mmc_df.iloc[1]['cluster']
     mmc_df['transition'] = mmc_df['cluster']+'-'+mmc_df['cluster_next']
     transit_df = mmc_df[mmc_df['cluster']!=mmc_df['cluster_next']]
     return transit_df
@@ -350,11 +351,12 @@ def get_mmc_clusters_stavectors(geo):
 
 
     # Stationary Vector Assignation
+    """
     try:
         clusters['sta_vector'] = get_stationary_vector(transit_matrix)
     except:
         pass
-    
+    """
     return clusters, m, transit_matrix, transit_df
 
 
