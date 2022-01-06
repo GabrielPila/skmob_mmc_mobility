@@ -1,26 +1,52 @@
-# Mobilit Markov Chains with Skmob
+# DATA PRIVACY ON GEOLOCATED DATASETS
 
-This repo is an implementation of Mobility Markov Chains with the Scikit Mobility Library.
+This repository storage a project of Data Privacy on Geolocated Datasets through synthetic data generation using Generative Adversarial Networks. 
+The dataset used for the experiments is the [Geolife DataSet](https://www.microsoft.com/en-us/download/details.aspx?id=52367&from=https%3A%2F%2Fresearch.microsoft.com%2Fen-us%2Fdownloads%2Fb16d359d-d164-469e-9fd4-daa38f2b2e13%2F), which is available on the Microsoft Research website.
 
-It focuses on the use of `Trajectory Data Frames`, a data structure part of skmob, to process geolocated information of an individual in order to generate a Mobility Markov Chain that represents its movement pattern.
+The project had the following steps:
+1. Extract and preprocess de geolocated dataset
+2. Generate algorithms to estimate the Mobility Markok Chain (MMC) representations per each user.
+3. Generate Syntethic mobility data with GANs to evaluate the privacy preserving capabilities of the experiment and the remaining usefulness of the data. 
 
-# MMC Generation Process
+You can find a more extensive documentation in the `./docs/` directory.
 
-The process is as follows:
-1. Loading the gelocated information in a tdf format.
+# 1. Installation and Set Up
 
-2. Point of Interest Generation (POIs):
-  - Noise Filtering: to remove the points in movement
-  - Detection of Stops: to identify points where the user spends more than N minutes
-  - Compressing: to unify some of the stops and reduce the potential POIs.
-  - Clustering: to generate clusters from the stops generated in a DBSCAN-like manner
+## 1.1. Dependencies
+1. Clone de repository: 
+`git clone git@github.com:GabrielPila/skmob_mmc_mobility.git`
+2. Access the repo: 
+`cd skmob_mmc_mobility`
+3. Create a virtual environment:
+`virtualenv venv`
+4. Install dependencies:
+`pip install -r requirements.txt`
+5. Now your enviroment is ready to work!
 
-3. POI assignment, where each point of the original tdf is assigned to a cluster, where possible.
+## 1.2. Data Gathering
 
-4. Generation of the transition matrix, which shows the transition of the user among different clusters.
+### 1.2.1. Downloading and Processing Information (optional)
 
-5. Generation of the Stationary Vector
+If you want to download the data from the Microsoft Research website, observe its original organization and to process the data in your device, run the following scripts:
+> `python3 programs/geolife_extraction.py`
 
-# Contributors:
-- Gabriel Pila (gabriel.pilah@pucp.edu.pe)
-- Anthony Ruiz (ruizc.anthony@gmail.com)
+### 1.2.2. Downloading Processed Information
+
+If you want to get the already processed dataset, you can download the information with the following scripts:
+```bash
+# Data extracted 
+# after downloading Microsoft data and appending the information of the files
+!gdown https://drive.google.com/uc?id=1gAJ5LXOWXPbzGLDYzVTYSKDPK7KThGgT
+
+# Data consolidated [PREFERRED]
+# this dataset contains an estimation of the distance between continuous points. 
+!gdown https://drive.google.com/uc?id=1h9RohsM_Z9w-Ny_WHwZt856tljl5I39J
+
+# Sample data [TO RUN SMALL EXPERIMENTS]
+!gdown https://drive.google.com/uc?id=XXXXXXXXX
+```
+
+# 2. Mobility Markov Chains
+
+
+# 3. Syntethic Data Generation

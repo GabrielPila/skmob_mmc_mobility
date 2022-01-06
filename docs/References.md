@@ -1,0 +1,9 @@
+# References
+The following are the papers that served as a baseline to our research project:
+1. Lee J., Clifton C. (2011) How Much Is Enough? Choosing ε for Differential Privacy. In: Lai X., Zhou J., Li H. (eds) Information Security. ISC 2011. Lecture Notes in Computer Science, vol 7001. Springer, Berlin, Heidelberg. https://doi.org/10.1007/978-3-642-24861-0_22
+2. Zheng, Lizhu Zhang, Xing Xie, Wei-Ying Ma. Mining interesting locations and travel sequences from GPS trajectories. In Proceedings of International conference on World Wild Web (WWW 2009), Madrid Spain. ACM Press: 791-800.
+3. Yu Zheng, Quannan Li, Yukun Chen, Xing Xie, Wei-Ying Ma. Understanding Mobility Based on GPS Data. In Proceedings of ACM conference on Ubiquitous Computing (UbiComp 2008), Seoul, Korea. ACM Press: 312-321.
+4. Yu Zheng, Xing Xie, Wei-Ying Ma, GeoLife: A Collaborative Social Networking Service among User, location and trajectory. Invited paper, in IEEE Data Engineering Bulletin. 33, 2, 2010, pp. 32-40.
+5. Sébastien Gambs, Marc-Olivier Killijian, Miguel Nuñez del Prado Cortez. De-anonymization attack on geolocated datasets. The 12th IEEE International Conference on Trust, Security and Privacy in Computing and Communications (IEEE TrustCom-13), Jul 2013, Melbourne, Australia. 9p. ffhal-00718763v1ff
+6. Liyang Xie, Kaixiang Lin, Shu Wang, Fei Wang, Jiayu Zhou, "Differentially Private Generative Adversarial Network". Available at: https://arxiv.org/abs/1802.06739
+7. Gambs, Sébastien & Killijian, Marc-Olivier & Nunez del Prado Cortez, Miguel. (2010). Show Me How You Move and I Will Tell You Who You Are. Proceedings of the 3rd ACM SIGSPATIAL International Workshop on Security and Privacy in GIS and LBS, SPRINGL 2010. 4. 34-41. 10.1145/1868470.1868479. 

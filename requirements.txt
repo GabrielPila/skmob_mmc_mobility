@@ -5,3 +5,4 @@ seaborn==0.11.1
 numpy==1.21.1
 matplotlib==3.4.2
 tqdm==4.61.1
+gdown==3.6.4
