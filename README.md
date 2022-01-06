@@ -57,6 +57,9 @@ We already processed the data and uploaded to a public path in Google Drive. If 
 - Reorganize functions into `utils.py`
 - Clean the MMC generation process
 - Clean the House location process.
+- Implement the generation of syntethic data with GANs
+- Create different .py files to run the experiments and save the exhibits.
+- 
 
 
 # Contributors:
