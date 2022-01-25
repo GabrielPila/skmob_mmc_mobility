@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import warnings
 import skmob
+import datetime
 from tqdm import tqdm
 from skmob.preprocessing import (filtering, 
                                  detection, 
@@ -142,10 +143,10 @@ def get_mmc_transitions(tdf):
         transit_df (Trajectory Data Frame): tdf with different origin and end clusters.
     '''
     ##################### CLUSTER TRANSITIONS ####################
-    mmc_df = tdf.dropna(subset=['cluster'])
+    mmc_df = tdf[tdf['cluster'].notnull()]
     mmc_df['cluster_next'] = mmc_df['cluster'].shift(-1)
 
-    mmc_df = mmc_df.dropna(subset=['cluster_next'])
+    mmc_df = mmc_df[mmc_df['cluster_next'].notnull()]
     #mmc_df.loc[mmc_df['cluster_next'].isnull(), 'cluster_next'] = mmc_df.iloc[1]['cluster']
     mmc_df['transition'] = mmc_df['cluster']+'-'+mmc_df['cluster_next']
     transit_df = mmc_df[mmc_df['cluster']!=mmc_df['cluster_next']]
@@ -314,50 +315,47 @@ def get_mmc_clusters_stavectors(geo):
     transit_matrix = pd.crosstab(transit_df['cluster'], 
                                  transit_df['cluster_next'],
                                  normalize='index').values
-    display(transit_matrix)
+    print(transit_matrix)
     
 ################################## START FIX ANTHONY ################################
 
-    #Lógica adicional para remover clusters sin salida o entrada
-    ##Retiramos las filas que tienen solo ceros y una columna con 1
-#    if ((transit_matrix.shape[0]>2 )& (transit_matrix.shape[1]>2)):
-#        print('Revisando filas de la Matriz de transición...')
-#        print('mostrando clusters iniciales')
-#        display(clusters)
-#        rows_to_drop = (transit_matrix==0).sum(axis=1)==(transit_matrix.shape[1]-1)#todos los valores en 0 excepto 1
-#        rows_to_drop = [idx for idx,row in enumerate(rows_to_drop) if row]
-#        if len(rows_to_drop)>0: 
-#            transit_matrix = np.delete(transit_matrix,rows_to_drop,0)
-#            clusters=clusters.drop(rows_to_drop, axis=0  )
-#            print('clusters {} eliminados'.format(rows_to_drop))
-#            print('Transit matrix actual:')
-#            display(transit_matrix)
-            
-        ##Retiramos las columnas que tienen solo ceros una fila con 1
-#        print('Revisando columnas de la Matriz de transición...')
-#        print('mostrando clusters iniciales')
-#        display(clusters)
-#        cols_to_drop = (transit_matrix==0).sum(axis=0)==(transit_matrix.shape[0]-1)
-#        cols_to_drop = [idx for idx,col in enumerate(cols_to_drop) if col]
-#        if len(cols_to_drop)>0: 
-#            transit_matrix = np.delete(transit_matrix,cols_to_drop,1)
-#            clusters=clusters.drop(cols_to_drop, axis=0  )
-#            print('clusters {} eliminados'.format(cols_to_drop))
-#            print('Transit matrix actual:')
-#            display(transit_matrix)
-#    display(transit_matrix)
+#Lógica adicional para añadir entradas o salidas y hacer simétrica la matriz
+    
+    #Registros cuyos clusters nunca aparecen como salida
+    cluster_mode = transit_df['cluster_next'].mode()[0] # Cluster más frecuente
+    df_never_next= transit_df[~transit_df['cluster'].isin(transit_df['cluster_next'].unique())]
+    df_never_next['cluster_next'] = df_never_next['cluster']
+    df_never_next['cluster'] = cluster_mode
+    if(df_never_next.shape[0]>0):
+        print('\nMostrando registros ficticios ')
+        df_never_next['datetime'] = df_never_next['datetime']  - datetime.timedelta(milliseconds = 10)
+        print(df_never_next)
+        
+        transit_df = pd.concat([transit_df,df_never_next], ignore_index=True ).sort_values(by='datetime')
+        
+    #Registros cuyos clusters nunca aparecen como inicio
+    df_never_ini= transit_df[~transit_df['cluster_next'].isin(transit_df['cluster'].unique())]
+    df_never_ini['cluster'] = df_never_ini['cluster_next']
+    df_never_ini['cluster_next'] = cluster_mode
+    if(df_never_ini.shape[0]>0):
+        print('\nMostrando registros ficticios')
+        df_never_ini['datetime'] = df_never_ini['datetime']  + datetime.timedelta(milliseconds = 10)
+        
+        print(df_never_ini)
+        transit_df = pd.concat([transit_df,df_never_ini], ignore_index=True ).sort_values(by='datetime')
+    
+    transit_matrix = pd.crosstab(transit_df['cluster'], 
+                                 transit_df['cluster_next'],
+                                 normalize='index')
+    print(transit_matrix)
 
-################################## END FIX ANTHONY ################################
+    print('Getting stationary Vector...')
+    stat_vec = get_stationary_vector(transit_matrix)
+    print('Stationary Vector generated:')
+    print(stat_vec)
+    
+    return clusters, m, transit_matrix, transit_df, stat_vec
 
-
-    # Stationary Vector Assignation
-    """
-    try:
-        clusters['sta_vector'] = get_stationary_vector(transit_matrix)
-    except:
-        pass
-    """
-    return clusters, m, transit_matrix, transit_df
 
 
 
@@ -504,3 +502,29 @@ def analyze_dates_with_events(data):
     plt.title('Distribución de usuarios según Nro de Días con Eventos (log10)');
     plt.ylabel('Numero de Usuarios')
     plt.xlabel('Número de eventos (log10 scale)')
+
+def filter_min_events_per_user(_df, min_events, user_col = 'user'):
+    # Filtro de cantidad mínima de eventos por usuario
+    print('Datos iniciales:')
+    print('# Registros: {:,}'.format(_df.shape[0]), '\t|', '# Usuarios: {}'.format(_df[user_col].nunique()))
+    print('-'*70)
+    users_to_del = _df.groupby(user_col)[user_col].count()[_df.groupby(user_col)[user_col].count()<min_events].index
+    _df = _df[~_df[user_col].isin(users_to_del)]
+    
+    print('Datos finales:')
+    print('# Registros: {:,}'.format(_df.shape[0]), '\t|', '# Usuarios: {}'.format(_df[user_col].nunique()))
+    print('-'*70)
+    return _df      
+
+def filter_min_days_per_user(_df, min_days, user_col = 'user', date_col  = 'date'):
+    # Filtro de cantidad mínima de días reportados por usuario
+    print('Datos iniciales:')
+    print('# Registros: {:,}'.format(_df.shape[0]), '\t|', '# Usuarios: {}'.format(_df[user_col].nunique()))
+    print('-'*70)
+    users_to_del = _df.groupby(user_col)[date_col].nunique()[_df.groupby(user_col)[date_col].nunique()<min_days].index
+    _df = _df[~_df[user_col].isin(users_to_del)]
+    
+    print('Datos finales:')
+    print('# Registros: {:,}'.format(_df.shape[0]), '\t|', '# Usuarios: {}'.format(_df[user_col].nunique()))
+    print('-'*70)
+    return _df     
