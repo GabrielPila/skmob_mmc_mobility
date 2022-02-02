@@ -101,13 +101,19 @@ def main(
     date = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename_prefix = filename.split('.')[0]
     if args.version:
-        output_path = os.path.join(project_path,path_mmc,filename_prefix,args.version)
+        output_path = os.path.join(project_path,path_mmc,filename_prefix,'v'+str(args.version))
     else:
-        output_path = os.path.join(project_path,path_mmc,filename_prefix,)
+        output_path = os.path.join(project_path,path_mmc,filename_prefix,'release')
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True) #version folder
+    os.makedirs(os.path.dirname(os.path.join(output_path,'logs/')), exist_ok=True) #log inside
 
     for val in ['geo_clusters','geo_clusters_transit','geo_clusters_transit_df','stat_vectors']:
-        output_fullpath = os.path.join(output_path,val)
-        os.makedirs(os.path.dirname(output_fullpath), exist_ok=True)
+        if val == 'stat_vectors':
+            output_fullpath = os.path.join(output_path,val)
+        else:
+            output_fullpath = os.path.join(output_path,'logs',val)
+        
         with open(output_fullpath, 'wb') as f:
             pickle.dump(eval(val),f)
         print(f'{output_fullpath} saved...')
