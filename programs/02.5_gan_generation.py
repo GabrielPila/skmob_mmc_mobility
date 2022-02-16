@@ -28,8 +28,8 @@ def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),
     path_output:str = os.path.join(PATH_LOCAL_DATA, 'users_gan'),
     path_img:str = os.path.join(PATH_LOCAL_DATA, 'img'),
-    filename:str = 'data_user_046.csv',
-    nepochs:int = 200,
+    filename:str = 'data_user_100.csv',
+    nepochs:int = 20,
     param:dict = {'batch_size': 64,
                 'discriminatorDims': [64, 32, 16, 1],
                 'generatorDims': [512, 3],
@@ -62,26 +62,19 @@ def train_gan(
 
     data_conjoint, user_conjoint = get_data_user_conjoined(data)
 
-    print('Avance 1')
-
     plot_user_geodata(data, user=user_conjoint, title='original', img_path=path_img)
 
     data_scaled, scaler = get_scaled_data(data_conjoint)
-    print('Avance 2')
 
     dataset = tf.data.Dataset.from_tensor_slices(data_scaled).shuffle(50000).batch(param["batch_size"], drop_remainder=True)
 
     results = dp.train(dataset, nepochs, param["batch_size"], data.shape[0])
-    print('Avance 3')
 
     gen_data = get_generated_data(results, scaler, user=user_conjoint)
-
-    print('Avance 4')
 
     file_path_output = os.path.join(path_output, f'epochs_{nepochs}_{filename}')
     gen_data.to_csv(file_path_output, index=False)
     plot_user_geodata(gen_data, user=user_conjoint, title=f'generated_epoch_{nepochs}', img_path=path_img)
-    print('Avance 5')
 
 
 if __name__ == '__main__':
