@@ -29,7 +29,6 @@ warnings.filterwarnings('ignore')
 def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),
     path_output:str = os.path.join(PATH_LOCAL_DATA, 'users_gan'),
-    path_img:str = os.path.join(PATH_LOCAL_DATA, 'img'),
     filename:str = 'data_user_100.csv',
     nepochs:int = 2,
     param:dict = {'batch_size': 64,
@@ -43,7 +42,7 @@ def train_gan(
 
     start_time = time.time()
 
-    for path in [path_data, path_output, path_img]:
+    for path in [path_data, path_output]:
         if not os.path.exists(path):
             os.mkdir(path)
 
@@ -64,6 +63,7 @@ def train_gan(
     )
     d_dims = '_'.join([str(x) for x in param["discriminatorDims"]])
     g_dims = '_'.join([str(x) for x in param["generatorDims"]])
+    bsize = str(param["batch_size"])
 
     data_conjoint, user_conjoint = get_data_user_conjoined(data)
 
@@ -76,7 +76,7 @@ def train_gan(
 
 
     # Save Experiment
-    exp_dir = f'user_{user_conjoint}_ddims_{d_dims}_gdims_{d_dims}_epochs_{nepochs}'
+    exp_dir = f'user_{user_conjoint}_ddims_{d_dims}_gdims_{d_dims}_bsize_{bsize}_epochs_{nepochs}'
     execution_time = time.time() - start_time
 
     path_exp = os.path.join(path_output, exp_dir)
@@ -115,4 +115,50 @@ def train_gan(
 
 
 if __name__ == '__main__':
-    train_gan()
+    use_one_case = False
+
+    if use_one_case:
+        train_gan()
+    else:
+        input_dim = 3
+        random_dim = 100
+        discriminatorDims = [
+            [64, 32, 16, 1],
+            [128, 64, 32, 16, 1],
+            [256, 128, 64, 32, 16, 1],
+            [512, 256, 128, 64, 32, 16, 1]
+        ]
+        generatorDims = [
+            [512, input_dim],
+            [128, 64, input_dim],
+            [256, 128, 64, input_dim],
+            [512, 256, 128, 64, input_dim]
+        ]
+        batch_sizes = [64, 128]
+        epochs = [10, 50, 100, 500]
+
+        hyperparams = []
+        for disDim in discriminatorDims:
+            for genDim in generatorDims:
+                for batch_size in batch_sizes:
+                    for epoch in epochs:
+                        hyperparams.append({
+                            'disDim': disDim,
+                            'genDim': genDim,
+                            'batch_size': batch_size,
+                            'epoch': epoch
+                        })
+                        
+        for hparam in tqdm(hyperparams):
+
+            train_gan(
+                filename= 'data_user_100.csv',
+                nepochs = hparam['epoch'],
+                param = {'batch_size': hparam['batch_size'],
+                            'discriminatorDims': hparam['disDim'],
+                            'generatorDims': hparam['genDim'],
+                            'input_dim': input_dim,
+                            'optimizer': 'Adam',
+                            'random_dim': random_dim
+                            }
+            )
