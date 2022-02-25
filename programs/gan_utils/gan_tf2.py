@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import time 
+import matplotlib.pyplot as plt
+import os
+import json
 
 class GAN:
 
@@ -131,12 +134,23 @@ class GAN:
         return x_gene
 
     
+    
     def save_models(self, path='./'):
         path_models = os.path.join(path, 'models')
         if not os.path.exists(path_models):
             os.mkdir(path_models)
         self.d_net.save(os.path.join(path_models, 'dnet.h5'))
         self.g_net.save(os.path.join(path_models, 'gnet.h5'))
+        
+        try:
+            d_loss = [float(x) for x in self.d_loss_store]
+            g_loss = [float(x) for x in self.g_loss_store]
+            json.dump(d_loss, open(os.path.join(path_models, 'd_loss.json'), 'w'))
+            json.dump(g_loss, open(os.path.join(path_models, 'g_loss.json'), 'w'))
+        except:
+            print('Losses could not be saved')
+            pass
+        
         print(f'Models saved in {path_models}!')
         
     def load_models(self, path='./'):
@@ -144,6 +158,30 @@ class GAN:
         if os.path.exists(path_models):
             self.d_net = tf.keras.models.load_model(os.path.join(path_models, 'dnet.h5'))
             self.g_net = tf.keras.models.load_model(os.path.join(path_models, 'gnet.h5'))
+            
+            try:
+                self.d_loss_store = json.load(open(os.path.join(path_models, 'd_loss.json'), 'r'))
+                self.g_loss_store = json.load(open(os.path.join(path_models, 'g_loss.json'), 'r'))            
+            except:
+                print('Losses could not be loaded')
+                pass                
             print(f'Models loaded from {path_models}!')
         else:
             print(f'Path "{path_models}" not found.')
+            
+    
+    def plot_loss_progress(self, path='./'):
+        fig = plt.figure(figsize=(12,4))
+
+        fig.add_subplot(1, 2, 1)
+        plt.plot(self.g_loss_store)
+        plt.title('Generator Losses')
+        plt.xlabel('step')
+
+        fig.add_subplot(1, 2, 2)
+        plt.plot(self.d_loss_store)
+        plt.title('Discriminator Losses')
+        plt.xlabel('step')
+
+        plt.tight_layout();
+        plt.savefig(os.path.join(path, 'losses.jpg'));

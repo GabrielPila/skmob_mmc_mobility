@@ -8,6 +8,14 @@
 *.txt
 !geo_000_009.csv.zip
 
+# models
+*.h5
+*.joblib
+
+# images
+users_gan/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
