@@ -129,3 +129,21 @@ class GAN:
         z_sample = self.random_noise(num_samples)
         x_gene = self.g_net.predict(z_sample)
         return x_gene
+
+    
+    def save_models(self, path='./'):
+        path_models = os.path.join(path, 'models')
+        if not os.path.exists(path_models):
+            os.mkdir(path_models)
+        self.d_net.save(os.path.join(path_models, 'dnet.h5'))
+        self.g_net.save(os.path.join(path_models, 'gnet.h5'))
+        print(f'Models saved in {path_models}!')
+        
+    def load_models(self, path='./'):
+        path_models = os.path.join(path, 'models')
+        if os.path.exists(path_models):
+            self.d_net = tf.keras.models.load_model(os.path.join(path_models, 'dnet.h5'))
+            self.g_net = tf.keras.models.load_model(os.path.join(path_models, 'gnet.h5'))
+            print(f'Models loaded from {path_models}!')
+        else:
+            print(f'Path "{path_models}" not found.')
