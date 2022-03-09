@@ -152,7 +152,7 @@ if __name__ == '__main__':
         for hparam in tqdm(hyperparams):
 
             train_gan(
-                filename= 'data_user_142.csv',
+                filename= 'data_user_099.csv',
                 nepochs = hparam['epoch'],
                 param = {'batch_size': hparam['batch_size'],
                             'discriminatorDims': hparam['disDim'],

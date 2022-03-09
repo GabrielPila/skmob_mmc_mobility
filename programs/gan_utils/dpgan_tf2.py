@@ -84,7 +84,7 @@ class DPGAN:
 
             y_hat_fake = self.d_net(x_fake, training=False)
 
-            g_loss = tf.reduce_mean(y_hat_fake)
+            g_loss = - tf.reduce_mean(y_hat_fake)
 
         g_grads = gen_tape.gradient(g_loss, self.g_net.trainable_variables)
 
