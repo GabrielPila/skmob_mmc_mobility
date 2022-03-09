@@ -69,8 +69,39 @@ class GAN:
         t = tf.add(tensor, tf.scalar_mul((1.0 / self.batch_size), rt))
         return t
 
+    def g_apply_loss_fun( y_pred, loss_function=None):
+
+        ##If str: pick from list and return the corresponding function
+        if (isinstance(loss_function, str)):
+            return getattr(tf, loss_function)(y_pred)
+
+        ## If function, return it
+        elif (callable(loss_function)):
+            return loss_function(y_pred)
+            
+        ## Default: 
+        else:
+            mse = tf.keras.losses.MeanSquaredError()
+            return -mse(y_pred).numpy()
+         
+    def d_apply_loss_fun(y_pred, y_real, loss_function=None ):
+
+        ##If str: pick from list and return the corresponding function
+        if (isinstance(loss_function, str)):
+            return getattr(tf, loss_function)(y_pred) - getattr(tf, loss_function)(y_real)
+
+        ## If function, return it
+        elif (callable(loss_function)):
+            return loss_function(y_pred) - loss_function(y_real)
+            
+        ## Default: 
+        else:
+            mse = tf.keras.losses.MeanSquaredError()
+            return mse(y_pred).numpy() -mse(y_real).numpy()         
+
     @tf.function
-    def g_train_step(self, x_real):
+    def g_train_step(self, x_real, g_loss_function):
+
 
         with tf.GradientTape() as gen_tape:
             z = self.random_noise()
@@ -79,7 +110,11 @@ class GAN:
 
             y_hat_fake = self.d_net(x_fake, training=False)
 
+<<<<<<< HEAD
             g_loss = - tf.reduce_mean(y_hat_fake)
+=======
+            g_loss = self.g_apply_loss_fun(g_loss_function, y_hat_fake) 
+>>>>>>> 1d14f290ea7757b1659f80536c0388c0ea87e9ff
 
         g_grads = gen_tape.gradient(g_loss, self.g_net.trainable_variables)
 
@@ -98,7 +133,7 @@ class GAN:
             y_hat_real = self.d_net(x_real, training=True)
             y_hat_fake = self.d_net(x_fake, training=True)
 
-            d_loss = tf.reduce_mean(y_hat_fake) - tf.reduce_mean(y_hat_real) 
+            d_loss = self.d_apply_loss_fun(y_hat_fake, y_hat_real, loss_function=None ) 
 
         d_grads = disc_tape.gradient(d_loss, self.d_net.trainable_variables)
 
@@ -108,7 +143,7 @@ class GAN:
 
         return d_loss
 
-    def train(self, dataset, nepochs, batch_size, output_examples):
+    def train(self, dataset, nepochs, batch_size, output_examples, g_loss_function=None, d_loss_function = None):
         self.batch_size = batch_size
         self.output_examples = output_examples
         with tf.device("gpu:0"):
