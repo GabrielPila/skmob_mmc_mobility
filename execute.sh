@@ -25,4 +25,4 @@ python programs/01.3_geolife_users_split.py -cw True -co True
 python programs/02.6_gan_generation_vTerminal.py
 
 # Load the report of all the evaluations to S3
-python 02.7_gan_reporting.py
+python programs/02.7_gan_reporting.py
