@@ -1,7 +1,8 @@
 import json
 import os
+import shutil
 import time
-import warnings 
+import warnings
 
 from matplotlib.pyplot import title
 import numpy as np
@@ -11,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
 from tqdm import tqdm
 
-from config import PATH_LOCAL_DATA
+from config import PATH_LOCAL_DATA, PATH_S3_EXPERIMENTS
 from gan_utils.dpgan_tf2 import DPGAN
 from gan_utils.gan_tf2 import GAN
 from gan_utils.gan_utils import (get_optimizers, 
@@ -19,6 +20,8 @@ from gan_utils.gan_utils import (get_optimizers,
                                 get_generated_data, 
                                 get_data_user_conjoined, 
                                 plot_user_geodata)
+from gan_utils.s3_utils import upload_file_to_s3                            
+
 warnings.filterwarnings('ignore')
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -28,7 +31,7 @@ for gpu in gpus:
 def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),
     path_output:str = os.path.join(PATH_LOCAL_DATA, 'users_gan'),
-    filename:str = 'data_user_101.csv',
+    filename:str = 'data_user_102.csv',
     nepochs:int = 2,
     param:dict = {'batch_size': 64,
                 'discriminatorDims': [64, 32, 16, 1],
@@ -111,6 +114,19 @@ def train_gan(
         'execution_time': execution_time
     }
     json.dump(registry_info, open(os.path.join(path_exp, 'registry_info.json'), 'w'))
+
+    # Compression of results
+    compress_extension = 'zip'
+    shutil.make_archive(path_exp, compress_extension, path_exp)
+
+    # Uploading of results
+    upload_file_to_s3(
+        filename=f'{exp_dir}.{compress_extension}', 
+        local_path=path_output, 
+        s3_path=PATH_S3_EXPERIMENTS, 
+        print_progress=True
+    )
+
 
 
 if __name__ == '__main__':

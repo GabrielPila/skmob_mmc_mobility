@@ -1,22 +1,18 @@
+import json
 import os
+import shutil
 import time
+import warnings
+
 from matplotlib.pyplot import title
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from sklearn.preprocessing import StandardScaler
-from config import PATH_LOCAL_DATA
-import warnings 
 from scipy.stats import ks_2samp
-import json
-
+from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
-gpus = tf.config.experimental.list_physical_devices('GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
-print(tf.__version__)
-print(gpus)
+from tqdm import tqdm
 
+from config import PATH_LOCAL_DATA, PATH_S3_EXPERIMENTS
 from gan_utils.dpgan_tf2 import DPGAN
 from gan_utils.gan_tf2 import GAN
 from gan_utils.gan_utils import (get_optimizers, 
@@ -24,12 +20,18 @@ from gan_utils.gan_utils import (get_optimizers,
                                 get_generated_data, 
                                 get_data_user_conjoined, 
                                 plot_user_geodata)
+from gan_utils.s3_utils import upload_file_to_s3                            
+
 warnings.filterwarnings('ignore')
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
 
 def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),
     path_output:str = os.path.join(PATH_LOCAL_DATA, 'users_gan'),
-    filename:str = 'data_user_100.csv',
+    filename:str = 'data_user_102.csv',
     nepochs:int = 2,
     param:dict = {'batch_size': 64,
                 'discriminatorDims': [64, 32, 16, 1],
@@ -37,7 +39,8 @@ def train_gan(
                 'input_dim': 3,
                 'optimizer': 'Adam',
                 'random_dim': 100
-                }
+                },
+    upload_to_s3:bool = False                
 ):
 
     start_time = time.time()
@@ -113,6 +116,22 @@ def train_gan(
     }
     json.dump(registry_info, open(os.path.join(path_exp, 'registry_info.json'), 'w'))
 
+    # Compression of results
+    compress_extension = 'zip'
+    shutil.make_archive(path_exp, compress_extension, path_exp)
+
+    if upload_to_s3:
+        # Uploading of results
+        upload_file_to_s3(
+            filename=f'{exp_dir}.{compress_extension}', 
+            local_path=path_output, 
+            s3_path=PATH_S3_EXPERIMENTS, 
+            print_progress=True
+        )
+
+
+
+
 from config import (dir_user_input,
                     dir_user_output,
                     user_files, 
@@ -122,7 +141,8 @@ from config import (dir_user_input,
                     generatorDims, 
                     optimizers, 
                     batch_sizes,
-                    epochs)
+                    epochs,
+                    upload_to_s3)
 
 def get_hiperparam_combinations():
     hyperparams = []
@@ -165,6 +185,7 @@ if __name__ == '__main__':
                 'input_dim': hparam['input_dim'],
                 'optimizer': hparam['optimizer'],
                 'random_dim': hparam['random_dim']
-            }
+            },
+            upload_to_s3=upload_to_s3
         )
 
