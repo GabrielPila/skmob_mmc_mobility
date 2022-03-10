@@ -1,11 +1,12 @@
-import tensorflow as tf
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-import time 
-import matplotlib.pyplot as plt
-import os
 import json
+import os
+import time 
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tqdm import tqdm
 
 class GAN:
 
@@ -110,11 +111,7 @@ class GAN:
 
             y_hat_fake = self.d_net(x_fake, training=False)
 
-<<<<<<< HEAD
-            g_loss = - tf.reduce_mean(y_hat_fake)
-=======
             g_loss = self.g_apply_loss_fun(g_loss_function, y_hat_fake) 
->>>>>>> 1d14f290ea7757b1659f80536c0388c0ea87e9ff
 
         g_grads = gen_tape.gradient(g_loss, self.g_net.trainable_variables)
 

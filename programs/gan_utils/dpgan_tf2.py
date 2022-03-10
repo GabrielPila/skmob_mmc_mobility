@@ -1,11 +1,12 @@
-import tensorflow as tf
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-import time 
-import matplotlib.pyplot as plt
-import os
 import json
+import os
+import time 
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tqdm import tqdm
 
 class DPGAN:
 

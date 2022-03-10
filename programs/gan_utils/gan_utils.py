@@ -1,14 +1,15 @@
-import tensorflow as tf
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-from sklearn.preprocessing import StandardScaler
-import seaborn as sns
-import matplotlib.pyplot as plt
-import time 
-from scipy.stats import ks_2samp
-import os
 import json
+import os
+import time 
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from scipy.stats import ks_2samp
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+import tensorflow as tf
+from tqdm import tqdm
 
 
 

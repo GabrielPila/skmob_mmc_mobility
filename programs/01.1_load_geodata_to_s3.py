@@ -1,7 +1,7 @@
 import os
 
-from gan_utils.s3_utils import upload_file_to_s3 
 from config import PATH_LOCAL_DATA, PATH_S3_DATA
+from gan_utils.s3_utils import upload_file_to_s3 
 
 for path_dir in ['data','experiment']:
     if not os.path.exists(path_dir):

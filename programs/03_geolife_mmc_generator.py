@@ -1,15 +1,15 @@
-import warnings
-import sys
-import re
-import os
 import datetime
+import os
+import re
+import sys
+import warnings
 
+import argparse
 import numpy as np
 import pandas as pd
+import pickle
 import skmob
 from tqdm import tqdm
-import pickle
-import argparse
 
 sys.path.append('../')
 
