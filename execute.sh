@@ -14,6 +14,9 @@ pip install -r requirements.txt
 
 # EXPERIMENTATION
 
+# Setting up the credentials of AWS and storing them in a ".env" file
+python programs/00_set_credentials.py
+
 # Download the geolocated data from S3 (geolife_consolidated.parquet)
 python programs/01.2_s3_download_data.py
 
