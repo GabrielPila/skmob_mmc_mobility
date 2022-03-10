@@ -21,7 +21,7 @@ You can find a more extensive documentation in the `./docs/` directory.
 `source execute.sh`
 
 
-## 1.1. Dependencies
+## 1.1. Option B: Dependencies
 1. Clone de repository: 
 `git clone git@github.com:GabrielPila/skmob_mmc_mobility.git`
 2. Access the repo: 
