@@ -21,6 +21,18 @@ from gan_utils.gan_utils import (get_optimizers,
                                 get_data_user_conjoined, 
                                 plot_user_geodata)
 from gan_utils.s3_utils import upload_file_to_s3                            
+from config import (dir_user_input,
+                    dir_user_output,
+                    user_files, 
+                    input_dim, 
+                    random_dim, 
+                    discriminatorDims, 
+                    generatorDims, 
+                    optimizers, 
+                    batch_sizes,
+                    epochs,
+                    upload_to_s3)
+
 
 warnings.filterwarnings('ignore')
 
@@ -79,7 +91,7 @@ def train_gan(
 
 
     # Save Experiment
-    exp_dir = f'user_{user_conjoint}_ddims_{d_dims}_gdims_{d_dims}_bsize_{bsize}_epochs_{nepochs}'
+    exp_dir = f'user_{user_conjoint}_ddims_{d_dims}_gdims_{g_dims}_bsize_{bsize}_epochs_{nepochs}'
     execution_time = time.time() - start_time
 
     path_exp = os.path.join(path_output, exp_dir)
@@ -129,20 +141,6 @@ def train_gan(
             print_progress=True
         )
 
-
-
-
-from config import (dir_user_input,
-                    dir_user_output,
-                    user_files, 
-                    input_dim, 
-                    random_dim, 
-                    discriminatorDims, 
-                    generatorDims, 
-                    optimizers, 
-                    batch_sizes,
-                    epochs,
-                    upload_to_s3)
 
 def get_hiperparam_combinations():
     hyperparams = []
