@@ -12,6 +12,15 @@ You can find a more extensive documentation in the `./docs/` directory.
 
 # 1. Installation and Set Up
 
+## 1.0. Option A: Full Setup in one Run
+1. Clone de repository: 
+`git clone git@github.com:GabrielPila/skmob_mmc_mobility.git`
+2. Access the repo: 
+`cd skmob_mmc_mobility`
+3. Run the shell scrip that contains all the steps to generate the information:
+`source execute.sh`
+
+
 ## 1.1. Dependencies
 1. Clone de repository: 
 `git clone git@github.com:GabrielPila/skmob_mmc_mobility.git`

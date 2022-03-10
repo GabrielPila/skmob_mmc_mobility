@@ -6,6 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from config import PATH_LOCAL_DATA
+from config import dir_user_input
 
 
 def clean_data_geopoints(data, clean_weekends=False, clean_outliers=False, ndesv=2):
@@ -26,14 +27,11 @@ def clean_data_geopoints(data, clean_weekends=False, clean_outliers=False, ndesv
 
 def split_geolife(
     path_geolife_data: str=os.path.join(PATH_LOCAL_DATA, 'geolife_consolidated.parquet'),
-    path_split_data: str=os.path.join(PATH_LOCAL_DATA, 'users'),
+    path_split_data: str=os.path.join(PATH_LOCAL_DATA, dir_user_input),
     user_cols: list=['time','lat','lon','user'],
     clean_weekends: bool=False, 
     clean_outliers: bool=False 
 ):
-    if clean_weekends or clean_outliers:
-        path_split_data = path_split_data + '_cl'
-
     if not os.path.exists(path_split_data):
         os.mkdir(path_split_data)
 
