@@ -39,7 +39,8 @@ def train_gan(
                 'input_dim': 3,
                 'optimizer': 'Adam',
                 'random_dim': 100
-                }
+                },
+    upload_to_s3:bool = False                
 ):
 
     start_time = time.time()
@@ -78,7 +79,7 @@ def train_gan(
 
 
     # Save Experiment
-    exp_dir = f'user_{user_conjoint}_ddims_{d_dims}_gdims_{d_dims}_bsize_{bsize}_epochs_{nepochs}'
+    exp_dir = f'user_{user_conjoint}_ddims_{d_dims}_gdims_{g_dims}_bsize_{bsize}_epochs_{nepochs}'
     execution_time = time.time() - start_time
 
     path_exp = os.path.join(path_output, exp_dir)
@@ -119,14 +120,14 @@ def train_gan(
     compress_extension = 'zip'
     shutil.make_archive(path_exp, compress_extension, path_exp)
 
-    # Uploading of results
-    upload_file_to_s3(
-        filename=f'{exp_dir}.{compress_extension}', 
-        local_path=path_output, 
-        s3_path=PATH_S3_EXPERIMENTS, 
-        print_progress=True
-    )
-
+    if upload_to_s3:
+        # Uploading of results
+        upload_file_to_s3(
+            filename=f'{exp_dir}.{compress_extension}', 
+            local_path=path_output, 
+            s3_path=PATH_S3_EXPERIMENTS, 
+            print_progress=True
+        )
 
 
 if __name__ == '__main__':

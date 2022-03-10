@@ -1,7 +1,7 @@
 print('\nConfigure your AWS credentials:\n')
-AWS_REGION_NAME = input('AWS_REGION_NAME:\t')
-AWS_ACCESS_KEY_ID = input('AWS_ACCESS_KEY_ID:\t')
-AWS_SECRET_ACCESS_KEY = input('AWS_SECRET_ACCESS_KEY:\t')
+AWS_REGION_NAME = input('AWS_REGION_NAME:\t').strip()
+AWS_ACCESS_KEY_ID = input('AWS_ACCESS_KEY_ID:\t').strip()
+AWS_SECRET_ACCESS_KEY = input('AWS_SECRET_ACCESS_KEY:\t').strip()
 
 credentials = f'''
 AWS_REGION_NAME={AWS_REGION_NAME}
