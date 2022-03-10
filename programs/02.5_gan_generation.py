@@ -1,15 +1,15 @@
+import json
 import os
 import time
 import warnings 
-import json
 
 from matplotlib.pyplot import title
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from sklearn.preprocessing import StandardScaler
 from scipy.stats import ks_2samp
+from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
+from tqdm import tqdm
 
 from config import PATH_LOCAL_DATA
 from gan_utils.dpgan_tf2 import DPGAN
@@ -28,7 +28,7 @@ for gpu in gpus:
 def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),
     path_output:str = os.path.join(PATH_LOCAL_DATA, 'users_gan'),
-    filename:str = 'data_user_100.csv',
+    filename:str = 'data_user_101.csv',
     nepochs:int = 2,
     param:dict = {'batch_size': 64,
                 'discriminatorDims': [64, 32, 16, 1],
@@ -114,7 +114,7 @@ def train_gan(
 
 
 if __name__ == '__main__':
-    use_one_case = False
+    use_one_case = True
 
     if use_one_case:
         train_gan()
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         for hparam in tqdm(hyperparams):
 
             train_gan(
-                filename= 'data_user_099.csv',
+                filename= 'data_user_101.csv',
                 nepochs = hparam['epoch'],
                 param = {'batch_size': hparam['batch_size'],
                             'discriminatorDims': hparam['disDim'],
