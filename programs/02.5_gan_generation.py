@@ -1,22 +1,17 @@
 import os
 import time
+import warnings 
+import json
+
 from matplotlib.pyplot import title
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.preprocessing import StandardScaler
-from config import PATH_LOCAL_DATA
-import warnings 
 from scipy.stats import ks_2samp
-import json
-
 import tensorflow as tf
-gpus = tf.config.experimental.list_physical_devices('GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
-print(tf.__version__)
-print(gpus)
 
+from config import PATH_LOCAL_DATA
 from gan_utils.dpgan_tf2 import DPGAN
 from gan_utils.gan_tf2 import GAN
 from gan_utils.gan_utils import (get_optimizers, 
@@ -25,6 +20,10 @@ from gan_utils.gan_utils import (get_optimizers,
                                 get_data_user_conjoined, 
                                 plot_user_geodata)
 warnings.filterwarnings('ignore')
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
 
 def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),

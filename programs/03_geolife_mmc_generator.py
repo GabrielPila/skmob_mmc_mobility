@@ -1,21 +1,25 @@
-import numpy as np
-import pandas as pd
 import warnings
-import skmob
-from tqdm import tqdm
 import sys
 import re
 import os
 import datetime
+
+import numpy as np
+import pandas as pd
+import skmob
+from tqdm import tqdm
 import pickle
 import argparse
-print(os.getcwd())
-print(__name__)
-project_path='/home/anthony/projects/skmob_mmc_mobility/'
+
 sys.path.append('../')
+
 from src.geo_utils import (filter_min_events_per_user, 
                             filter_min_days_per_user,
                             get_mmc_clusters_stavectors)
+
+print(os.getcwd())
+print(__name__)
+project_path='/home/anthony/projects/skmob_mmc_mobility/'
 
 
 def main(

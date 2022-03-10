@@ -7,13 +7,14 @@
 # 6. Save the consolidated data
 ######################################################
 
+import os
+import gc
+import warnings
+
 import numpy as np
 import pandas as pd
-import warnings
 from tqdm import tqdm
-import os
 import skmob
-import gc
 
 warnings.filterwarnings('ignore')
 

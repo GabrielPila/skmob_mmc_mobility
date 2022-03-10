@@ -1,6 +1,7 @@
+import os
+
 from gan_utils.s3_utils import download_file_from_s3
 from config import PATH_LOCAL_DATA, PATH_S3_DATA
-import os
 
 for path_dir in ['data','experiment']:
     if not os.path.exists(path_dir):

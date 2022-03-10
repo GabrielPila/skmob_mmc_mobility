@@ -1,9 +1,11 @@
+import os
+
 import pandas as pd
 import numpy as np
-import os
-from config import PATH_LOCAL_DATA
 from tqdm import tqdm
 import argparse
+
+from config import PATH_LOCAL_DATA
 
 
 def clean_data_geopoints(data, clean_weekends=False, clean_outliers=False, ndesv=2):

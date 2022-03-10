@@ -1,12 +1,14 @@
+import sys
+import os
+import warnings
+
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
-import warnings
 from tqdm import tqdm
-import sys
+
 sys.path.append('../')
-import os
 
 
 def plot_histogram(serie, 

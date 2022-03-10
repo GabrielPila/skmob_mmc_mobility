@@ -4,13 +4,14 @@ import sys
 root_folder = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(root_folder)
 
+import awswrangler as wr
+import pandas as pd
+
 from settings import session
 from config import (PATH_S3_DATA, 
                     PATH_S3_EXPERIMENTS,
                     PATH_LOCAL_DATA, 
                     PATH_LOCAL_EXPERIMENTS)
-import awswrangler as wr
-import pandas as pd
 
 def load_parquet_to_s3(filename='geolife_consolidated.parquet',
                         local_path=PATH_LOCAL_DATA, 
