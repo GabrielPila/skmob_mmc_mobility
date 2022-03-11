@@ -149,8 +149,8 @@ class GAN:
                 pbar.set_description("Epoch {}/{}".format(epoch+1, nepochs))
                 for batch in pbar:
                     batch = tf.cast(batch, tf.float32)
-                    rd_loss = self.d_train_step(batch)
-                    rg_loss = self.g_train_step(batch)
+                    rd_loss = self.d_train_step(batch, d_loss_function)
+                    rg_loss = self.g_train_step(batch, g_loss_function)
                     
                     self.g_loss_store.append(rg_loss.numpy())
                     self.d_loss_store.append(rd_loss.numpy())
