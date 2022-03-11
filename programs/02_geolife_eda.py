@@ -1,17 +1,10 @@
-import numpy as np
-#import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
-import warnings
-import skmob
-from tqdm import tqdm
-import sys
-sys.path.append('../')
-from src.geo_utils import (get_clusters_from_tdf,
-                            assign_tdf_points_to_clusters,
-                            get_mmc_transitions,
-                            get_stationary_vector)
 import os
+import sys
+import warnings
+sys.path.append('../')
+
+import pandas as pd
+
 from src.geo_plots import (plot_user_distribution_by_events,
                             plot_event_distribution_by_time_drift,
                             plot_event_distribution_by_space_drift)

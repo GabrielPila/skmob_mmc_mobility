@@ -1,11 +1,12 @@
-import tensorflow as tf
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-import time 
-import matplotlib.pyplot as plt
-import os
 import json
+import os
+import time 
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tqdm import tqdm
 
 class GAN:
 
@@ -100,7 +101,8 @@ class GAN:
             return mse(y_pred).numpy() -mse(y_real).numpy()         
 
     @tf.function
-    def g_train_step(self, x_real, g_loss_function):
+#    def g_train_step(self, x_real, g_loss_function):
+    def g_train_step(self, x_real):
 
 
         with tf.GradientTape() as gen_tape:
@@ -110,7 +112,8 @@ class GAN:
 
             y_hat_fake = self.d_net(x_fake, training=False)
 
-            g_loss = self.g_apply_loss_fun(g_loss_function, y_hat_fake) 
+            g_loss = tf.reduce_mean(y_hat_fake)
+#            g_loss = self.g_apply_loss_fun(g_loss_function, y_hat_fake) 
 
         g_grads = gen_tape.gradient(g_loss, self.g_net.trainable_variables)
 
@@ -129,7 +132,8 @@ class GAN:
             y_hat_real = self.d_net(x_real, training=True)
             y_hat_fake = self.d_net(x_fake, training=True)
 
-            d_loss = self.d_apply_loss_fun(y_hat_fake, y_hat_real, loss_function=None ) 
+            d_loss = tf.reduce_mean(y_hat_fake) - tf.reduce_mean(y_hat_real) 
+#            d_loss = self.d_apply_loss_fun(y_hat_fake, y_hat_real, loss_function=None ) 
 
         d_grads = disc_tape.gradient(d_loss, self.d_net.trainable_variables)
 
@@ -139,7 +143,8 @@ class GAN:
 
         return d_loss
 
-    def train(self, dataset, nepochs, batch_size, output_examples, g_loss_function=None, d_loss_function = None):
+#    def train(self, dataset, nepochs, batch_size, output_examples, g_loss_function=None, d_loss_function = None):
+    def train(self, dataset, nepochs, batch_size, output_examples):
         self.batch_size = batch_size
         self.output_examples = output_examples
         with tf.device("gpu:0"):

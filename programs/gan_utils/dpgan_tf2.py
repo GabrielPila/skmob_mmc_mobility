@@ -1,11 +1,12 @@
-import tensorflow as tf
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-import time 
-import matplotlib.pyplot as plt
-import os
 import json
+import os
+import time 
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tqdm import tqdm
 
 class DPGAN:
 
@@ -84,7 +85,7 @@ class DPGAN:
 
             y_hat_fake = self.d_net(x_fake, training=False)
 
-            g_loss = tf.reduce_mean(y_hat_fake)
+            g_loss = - tf.reduce_mean(y_hat_fake)
 
         g_grads = gen_tape.gradient(g_loss, self.g_net.trainable_variables)
 

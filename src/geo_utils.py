@@ -1,15 +1,16 @@
-import numpy as np
-#import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
-import warnings
-import skmob
+import os
 import datetime
-from tqdm import tqdm
+import warnings
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import skmob
 from skmob.preprocessing import (filtering, 
                                  detection, 
                                  compression, 
                                  clustering)
+from tqdm import tqdm
 
 
 warnings.filterwarnings('ignore')
