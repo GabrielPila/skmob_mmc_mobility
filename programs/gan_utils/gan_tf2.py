@@ -87,9 +87,6 @@ class GAN:
             return mse(y_pred, tf.ones(y_pred.shape, tf.float32))
          
     def d_apply_loss_fun(self,y_pred, y_real, loss_function=None ):
-        print('y_pred',y_pred)
-        print('y_real',y_real)
-        print('loss_function',loss_function)
         ##If str: pick from list and return the corresponding function
         if (isinstance(loss_function, str)):
             return getattr(tf, loss_function)(y_pred) - getattr(tf, loss_function)(y_real)
@@ -101,11 +98,10 @@ class GAN:
         ## Default: 
         else:
             mse = tf.keras.losses.MeanSquaredError()
-            return mse(y_pred, tf.zeros(y_pred.shape, tf.float32)) +mse(y_real, tf.ones(y_real.shape, tf.float32))      
+            return mse(y_pred, tf.zeros(y_pred.shape, tf.float32)) + mse(y_real, tf.ones(y_real.shape, tf.float32))      
 
     @tf.function
     def g_train_step(self, x_real, g_loss_function):
-
         with tf.GradientTape() as gen_tape:
             z = self.random_noise()
 
@@ -113,11 +109,13 @@ class GAN:
 
             y_hat_fake = self.d_net(x_fake, training=False)
 
-            g_loss = self.g_apply_loss_fun(y_hat_fake, g_loss_function) 
+            g_loss = self.g_apply_loss_fun(y_hat_fake, g_loss_function)
 
         g_grads = gen_tape.gradient(g_loss, self.g_net.trainable_variables)
 
         self.g_optimizer.apply_gradients(zip(g_grads, self.g_net.trainable_variables))
+        
+
 
         return g_loss
 
@@ -143,6 +141,7 @@ class GAN:
         return d_loss
 
     def train(self, dataset, nepochs, batch_size, output_examples, g_loss_function=None, d_loss_function = None):
+        print('Training started')
         self.batch_size = batch_size
         self.output_examples = output_examples
         with tf.device("gpu:0"):
@@ -157,6 +156,9 @@ class GAN:
                     
                     self.g_loss_store.append(rg_loss.numpy())
                     self.d_loss_store.append(rd_loss.numpy())
+                print('Epoch {} finished'.format(epoch))
+                print('current steps:{}'.format(len(self.g_loss_store)))
+                print(self.g_loss_store[-1],self.d_loss_store[-1])
 
         z_sample = self.random_noise(self.output_examples)
         x_gene = self.g_net.predict(z_sample)

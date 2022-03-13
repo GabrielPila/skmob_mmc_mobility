@@ -32,7 +32,7 @@ def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),
     path_output:str = os.path.join(PATH_LOCAL_DATA, 'users_gan'),
     filename:str = 'data_user_102.csv',
-    nepochs:int = 2,
+    nepochs:int = 10,
     param:dict = {'batch_size': 64,
                 'discriminatorDims': [64, 32, 16, 1],
                 'generatorDims': [512, 3],
