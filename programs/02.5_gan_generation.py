@@ -32,7 +32,7 @@ def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),
     path_output:str = os.path.join(PATH_LOCAL_DATA, 'users_gan'),
     filename:str = 'data_user_102.csv',
-    nepochs:int = 10,
+    nepochs:int = 3,
     param:dict = {'batch_size': 64,
                 'discriminatorDims': [64, 32, 16, 1],
                 'generatorDims': [512, 3],
@@ -168,7 +168,7 @@ if __name__ == '__main__':
         for hparam in tqdm(hyperparams):
 
             train_gan(
-                filename= 'data_user_101.csv',
+                filename= 'data_user_002.csv',
                 nepochs = hparam['epoch'],
                 param = {'batch_size': hparam['batch_size'],
                             'discriminatorDims': hparam['disDim'],

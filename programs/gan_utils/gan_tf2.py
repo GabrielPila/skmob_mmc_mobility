@@ -3,6 +3,7 @@ import os
 import time 
 
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -143,7 +144,11 @@ class GAN:
     def train(self, dataset, nepochs, batch_size, output_examples, g_loss_function=None, d_loss_function = None):
         print('Training started')
         self.batch_size = batch_size
+        self.nepochs = nepochs
         self.output_examples = output_examples
+        self.dataset_len = len(dataset)
+        self.epoch_size = self.dataset_len/ self.batch_size
+        print(len(dataset), batch_size, self.epoch_size)
         with tf.device("gpu:0"):
             for epoch in range(nepochs):
                 start_time = time.time()
@@ -207,17 +212,31 @@ class GAN:
             
     
     def plot_loss_progress(self, path='./'):
-        fig = plt.figure(figsize=(12,4))
+        import math
+        def custom_format_epoch_func(value,tick_number):
+            return 'Epoch {}'.format(value//self.dataset_len)
 
-        fig.add_subplot(1, 2, 1)
+        fig,ax = plt.subplots(2,1,figsize=(12,4))
+
+        # Generator Losses
+        plt.axes(ax[0])
         plt.plot(self.g_loss_store)
         plt.title('Generator Losses')
         plt.xlabel('step')
+        ax[0].xaxis.set_major_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.epoch_size*self.batch_size) for i in range(0,self.nepochs)]))
+        ax[0].xaxis.set_minor_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.batch_size) for i in range(0,math.ceil(self.nepochs*self.epoch_size))]))
+        ax[0].xaxis.set_major_formatter(plt.FuncFormatter(custom_format_epoch_func))
 
-        fig.add_subplot(1, 2, 2)
+        # Discriminator Losses
+        plt.axes(ax[1])
         plt.plot(self.d_loss_store)
         plt.title('Discriminator Losses')
         plt.xlabel('step')
+        ax[1].xaxis.set_major_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.epoch_size*self.batch_size) for i in range(0,self.nepochs)]))
+        ax[1].xaxis.set_minor_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.batch_size) for i in range(0,math.ceil(self.nepochs*self.epoch_size))]))
+        ax[1].xaxis.set_major_formatter(plt.FuncFormatter(custom_format_epoch_func))
 
         plt.tight_layout();
         plt.savefig(os.path.join(path, 'losses.jpg'));
+
+    
