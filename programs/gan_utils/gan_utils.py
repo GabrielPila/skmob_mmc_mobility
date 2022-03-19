@@ -13,15 +13,19 @@ from tqdm import tqdm
 
 
 
-def get_optimizers(optimizer='Adam'):
+def get_optimizers(
+    optimizer='Adam',
+    g_learning_rate = 1e-4, #Parametrized learning rate for generator
+    d_learning_rate = 1e-4 #Parametrized learning rate for discriminator
+    ):
     if optimizer == "Adam":
         g_optimizer = tf.keras.optimizers.Adam(
-            learning_rate=1e-4,
+            learning_rate=g_learning_rate,
             beta_1=0.5,
             beta_2=0.9
         )
         d_optimizer = tf.keras.optimizers.Adam(
-            learning_rate=1e-4,
+            learning_rate=d_learning_rate,
             beta_1=0.5,
             beta_2=0.9
         )
@@ -34,7 +38,8 @@ def get_optimizers(optimizer='Adam'):
 
 def get_scaled_data(data):
     data_to_scale = data[['time','lat','lon']].copy()
-    data_to_scale["time-f"] = pd.to_datetime(data_to_scale['time']).astype(int)/10**9
+    #data_to_scale["time-f"] = pd.to_datetime(data_to_scale['time']).astype(int)/10**9
+    data_to_scale["time-f"] = pd.to_datetime(data_to_scale['time']).dt.hour
     data_to_scale = data_to_scale[['time-f','lat','lon']]
     scaler = StandardScaler()
     scaler.fit(data_to_scale)

@@ -31,5 +31,5 @@ generatorDims = [
         ]        
 optimizers = ['Adam']        
 batch_sizes = [64, 128]        
-epochs = [2] #, 10, 50, 100, 500]
-upload_to_s3 = True
+epochs = [20] #, 10, 50, 100, 500]
+upload_to_s3 = False
