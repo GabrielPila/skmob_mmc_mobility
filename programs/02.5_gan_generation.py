@@ -73,7 +73,7 @@ def train_gan(
     data_scaled, scaler = get_scaled_data(data_conjoint)
     dataset = tf.data.Dataset.from_tensor_slices(data_scaled).shuffle(50000).batch(param["batch_size"], drop_remainder=True)
 
-    results = dp.train(dataset, nepochs, param["batch_size"], data.shape[0])
+    results = dp.train(dataset, nepochs, param["batch_size"], data.shape[0])#, g_loss_function='reduce_mean',d_loss_function='reduce_mean')
     gen_data = get_generated_data(results, scaler, user=user_conjoint)
 
 
