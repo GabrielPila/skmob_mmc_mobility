@@ -36,19 +36,28 @@ def get_optimizers(
     return g_optimizer, d_optimizer
 
 
-def get_scaled_data(data):
+def get_data(data, scale_data):
     data_to_scale = data[['time','lat','lon']].copy()
     #data_to_scale["time-f"] = pd.to_datetime(data_to_scale['time']).astype(int)/10**9
     data_to_scale["time-f"] = pd.to_datetime(data_to_scale['time']).dt.hour
     data_to_scale = data_to_scale[['time-f','lat','lon']]
     scaler = StandardScaler()
-    scaler.fit(data_to_scale)
-    data_scaled = scaler.transform(data_to_scale)
-    return data_scaled, scaler
+
+    ## Scale if necessary
+    if scale_data:
+        scaler.fit(data_to_scale)
+        data_to_scale = scaler.transform(data_to_scale)
+    return data_to_scale, scaler
 
 
-def get_generated_data(results, scaler, user):
-    temp = scaler.inverse_transform(results)
+def get_generated_data(results, scaler, user, scale_data):
+
+    ## apply inverse transforme if necessary
+    if scale_data: 
+        temp = scaler.inverse_transform(results)
+    else:
+        temp = results.copy()
+        
     temp = pd.DataFrame(temp)
     temp.rename(columns={1:'lat',
                             2:'lon',

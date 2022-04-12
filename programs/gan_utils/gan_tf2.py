@@ -36,6 +36,7 @@ class GAN:
         self.g_loss_store = []
         self.d_loss_store = []
         self.wdis_store   = []
+        self.data_limits = None
 
     def create_generator(self):
         G = tf.keras.Sequential()
@@ -59,10 +60,24 @@ class GAN:
         return D
 
     def random_noise(self, nrows=None):
-        return tf.random.uniform(
-            (self.batch_size if not nrows else nrows, self.random_dim),
-            minval=-1, maxval=1
-        )
+        if self.data_limits != None:
+
+            results = tf.reshape(tf.constant([], dtype=tf.float32),(0,self.random_dim))
+            for col in self.data_limits:
+                results = tf.concat([results,
+                    tf.random.uniform(
+                        (self.batch_size if not nrows else nrows,self.random_dim),
+                        minval=self.data_limits[col]['min'],
+                        maxval=self.data_limits[col]['max']
+                        )],axis=0)
+            #print(results)
+            #raise ValueError('A very specific bad thing happened.')
+            return results
+        else:
+            return tf.random.uniform(
+                (self.batch_size if not nrows else nrows, self.random_dim),
+                minval=-1, maxval=1
+            )
 
     def dpnoise(self, tensor):
         '''add noise to tensor'''

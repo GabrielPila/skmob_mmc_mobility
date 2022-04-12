@@ -16,7 +16,7 @@ from config import PATH_LOCAL_DATA, PATH_S3_EXPERIMENTS
 from gan_utils.dpgan_tf2 import DPGAN
 from gan_utils.gan_tf2 import GAN
 from gan_utils.gan_utils import (get_optimizers, 
-                                get_scaled_data, 
+                                get_data, 
                                 get_generated_data, 
                                 get_data_user_conjoined, 
                                 plot_user_geodata)
@@ -31,16 +31,17 @@ for gpu in gpus:
 def train_gan(
     path_data:str = os.path.join(PATH_LOCAL_DATA, 'users'),
     path_output:str = os.path.join(PATH_LOCAL_DATA, 'users_gan'),
-    filename:str = 'data_user_102.csv',
-    nepochs:int = 3,
-    param:dict = {'batch_size': 64,
+    filename:str = 'data_user_002.csv',
+    nepochs:int = 2,
+    param:dict = {'batch_size': 128,
                 'discriminatorDims': [64, 32, 16, 1],
-                'generatorDims': [512, 3],
+                'generatorDims': [512,16, 3],
                 'input_dim': 3,
                 'optimizer': 'Adam',
                 'random_dim': 100
                 },
-    upload_to_s3:bool = False                
+    upload_to_s3:bool = False,
+    scale_data = False
 ):
 
     start_time = time.time()
@@ -70,11 +71,25 @@ def train_gan(
 
     data_conjoint, user_conjoint = get_data_user_conjoined(data)
 
-    data_scaled, scaler = get_scaled_data(data_conjoint)
+    # Scale if necessary
+    data_scaled, scaler = get_data(data_conjoint,scale_data)
+
+    # Get min and max of Long, Lat and hour
+    if not scale_data:
+        data_limits = {}
+        for col in data_scaled.columns:
+            data_limits[col] = {}
+            data_limits[col]['min'] = data_scaled[col].min()
+            data_limits[col]['max'] = data_scaled[col].max()
+        dp.data_limits = data_limits
+
+
     dataset = tf.data.Dataset.from_tensor_slices(data_scaled).shuffle(50000).batch(param["batch_size"], drop_remainder=True)
 
-    results = dp.train(dataset, nepochs, param["batch_size"], data.shape[0])#, g_loss_function='reduce_mean',d_loss_function='reduce_mean')
-    gen_data = get_generated_data(results, scaler, user=user_conjoint)
+    results = dp.train(dataset, nepochs, param["batch_size"], data.shape[0], g_loss_function='reduce_mean',d_loss_function='reduce_mean',)
+
+
+    gen_data = get_generated_data(results, scaler, user=user_conjoint,scale_data = scale_data)
 
 
 
