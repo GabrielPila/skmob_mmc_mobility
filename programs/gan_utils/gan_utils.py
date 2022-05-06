@@ -38,9 +38,12 @@ def get_optimizers(
 
 def get_data(data, scale_data):
     data_to_scale = data[['time','lat','lon']].copy()
-    #data_to_scale["time-f"] = pd.to_datetime(data_to_scale['time']).astype(int)/10**9
     data_to_scale["time-f"] = pd.to_datetime(data_to_scale['time']).dt.hour
-    data_to_scale = data_to_scale[['time-f','lat','lon']]
+    data_to_scale['lat_sqrd'] = data_to_scale['lat']**2
+    data_to_scale['lon_sqrd'] = data_to_scale['lon']**2
+    data_to_scale['lat_lon_sqrd'] = data_to_scale['lat']**2 + data_to_scale['lon']**2
+    data_to_scale = data_to_scale[['time-f','lat','lon','lat_sqrd','lon_sqrd','lat_lon_sqrd']]
+
     scaler = StandardScaler()
 
     ## Scale if necessary
