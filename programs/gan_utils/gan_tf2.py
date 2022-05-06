@@ -36,6 +36,7 @@ class GAN:
         self.g_loss_store = []
         self.d_loss_store = []
         self.wdis_store   = []
+        self.data_limits = None
 
     def create_generator(self):
         G = tf.keras.Sequential()
@@ -59,10 +60,24 @@ class GAN:
         return D
 
     def random_noise(self, nrows=None):
-        return tf.random.uniform(
-            (self.batch_size if not nrows else nrows, self.random_dim),
-            minval=-1, maxval=1
-        )
+        if self.data_limits != None:
+
+            results = tf.reshape(tf.constant([], dtype=tf.float32),(0,self.random_dim))
+            for col in self.data_limits:
+                results = tf.concat([results,
+                    tf.random.uniform(
+                        (self.batch_size if not nrows else nrows,self.random_dim),
+                        minval=self.data_limits[col]['min'],
+                        maxval=self.data_limits[col]['max']
+                        )],axis=0)
+            #print(results)
+            #raise ValueError('A very specific bad thing happened.')
+            return results
+        else:
+            return tf.random.uniform(
+                (self.batch_size if not nrows else nrows, self.random_dim),
+                minval=-1, maxval=1
+            )
 
     def dpnoise(self, tensor):
         '''add noise to tensor'''
@@ -71,12 +86,12 @@ class GAN:
         rt = tf.random.normal(s, mean=0.0, stddev=self.noise_std)
         t = tf.add(tensor, tf.scalar_mul((1.0 / self.batch_size), rt))
         return t
-
+    
+    @tf.function
     def g_apply_loss_fun(self, y_pred, loss_function=None):
-
         ##If str: pick from list and return the corresponding function
         if (isinstance(loss_function, str)):
-            return getattr(tf, loss_function)(y_pred)
+            return 1-getattr(tf.math, loss_function)(y_pred)
 
         ## If function, return it
         elif (callable(loss_function)):
@@ -90,7 +105,7 @@ class GAN:
     def d_apply_loss_fun(self,y_pred, y_real, loss_function=None ):
         ##If str: pick from list and return the corresponding function
         if (isinstance(loss_function, str)):
-            return getattr(tf, loss_function)(y_pred) - getattr(tf, loss_function)(y_real)
+            return getattr(tf.math, loss_function)(y_pred) - getattr(tf.math, loss_function)(y_real)
 
         ## If function, return it
         elif (callable(loss_function)):
@@ -110,8 +125,8 @@ class GAN:
 
             y_hat_fake = self.d_net(x_fake, training=False)
 
-            g_loss = self.g_apply_loss_fun(y_hat_fake, g_loss_function)
-
+            g_loss = self.g_apply_loss_fun(y_hat_fake, loss_function=g_loss_function)
+        
         g_grads = gen_tape.gradient(g_loss, self.g_net.trainable_variables)
 
         self.g_optimizer.apply_gradients(zip(g_grads, self.g_net.trainable_variables))
@@ -131,8 +146,8 @@ class GAN:
             y_hat_real = self.d_net(x_real, training=True)
             y_hat_fake = self.d_net(x_fake, training=True)
 
-            d_loss = self.d_apply_loss_fun(y_hat_fake, y_hat_real, loss_function=None ) 
-
+            d_loss = self.d_apply_loss_fun(y_hat_fake, y_hat_real, loss_function=d_loss_function ) 
+        
         d_grads = disc_tape.gradient(d_loss, self.d_net.trainable_variables)
 
         self.d_optimizer.apply_gradients(zip(d_grads, self.d_net.trainable_variables))
@@ -143,12 +158,12 @@ class GAN:
 
     def train(self, dataset, nepochs, batch_size, output_examples, g_loss_function=None, d_loss_function = None):
         print('Training started')
+        print('Total data fed: {:,}'.format(output_examples))
+        print('Batch size: {:,}'.format(batch_size))
         self.batch_size = batch_size
         self.nepochs = nepochs
         self.output_examples = output_examples
-        self.dataset_len = len(dataset)
-        self.epoch_size = self.dataset_len/ self.batch_size
-        print(len(dataset), batch_size, self.epoch_size)
+        self.epoch_size = output_examples/ batch_size
         with tf.device("gpu:0"):
             for epoch in range(nepochs):
                 start_time = time.time()
@@ -214,7 +229,7 @@ class GAN:
     def plot_loss_progress(self, path='./'):
         import math
         def custom_format_epoch_func(value,tick_number):
-            return 'Epoch {}'.format(value//self.dataset_len)
+            return 'Epoch {:,.0f}'.format(value//self.epoch_size)
 
         fig,ax = plt.subplots(2,1,figsize=(12,4))
 
@@ -223,18 +238,25 @@ class GAN:
         plt.plot(self.g_loss_store)
         plt.title('Generator Losses')
         plt.xlabel('step')
-        ax[0].xaxis.set_major_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.epoch_size*self.batch_size) for i in range(0,self.nepochs)]))
-        ax[0].xaxis.set_minor_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.batch_size) for i in range(0,math.ceil(self.nepochs*self.epoch_size))]))
+        ax[0].xaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator(4))
+        ax[0].xaxis.set_major_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.epoch_size) for i in range(0,self.nepochs)]))
         ax[0].xaxis.set_major_formatter(plt.FuncFormatter(custom_format_epoch_func))
+        ax[0].xaxis.set_minor_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
+        ax[0].tick_params(axis='both', which='minor', labelsize=8)
+        ax[0].tick_params(axis='x', which='major', width=2, labelcolor ='r')
 
         # Discriminator Losses
         plt.axes(ax[1])
         plt.plot(self.d_loss_store)
         plt.title('Discriminator Losses')
         plt.xlabel('step')
-        ax[1].xaxis.set_major_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.epoch_size*self.batch_size) for i in range(0,self.nepochs)]))
-        ax[1].xaxis.set_minor_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.batch_size) for i in range(0,math.ceil(self.nepochs*self.epoch_size))]))
+        ax[1].xaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator(4))
+        ax[1].xaxis.set_major_locator(matplotlib.ticker.FixedLocator([math.ceil(i*self.epoch_size) for i in range(0,self.nepochs)]))
         ax[1].xaxis.set_major_formatter(plt.FuncFormatter(custom_format_epoch_func))
+        ax[1].xaxis.set_minor_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
+        ax[1].tick_params(axis='both', which='minor', labelsize=8)
+        ax[1].tick_params(axis='x', which='major', width=2, labelcolor ='r')
+
 
         plt.tight_layout();
         plt.savefig(os.path.join(path, 'losses.jpg'));
